@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zenite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sky-deep: #050b1a; 
+            --sky-light: #185adb; 
+            --sun-gold: #ffc93c;
+            --text-main: #ffffff;
+            --glass: rgba(0, 5, 15, 0.75); /* Fundo escuro para destacar as estrelas atrás */
+            --table-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            /* Imagem que remete exatamente ao frame enviado (Céu estrelado profundo) */
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+                url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071');
+            
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            margin: 0; padding: 0;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: rgba(5, 11, 26, 0.95);
+            backdrop-filter: blur(15px);
+            padding: 10px 0;
+            position: fixed;
+            top: 0; width: 100%;
+            z-index: 9999;
+            border-bottom: 1px solid var(--table-border);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav button {
+            background: none; border: none; color: rgba(255, 255, 255, 0.5);
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+            padding: 12px 10px; cursor: pointer; transition: 0.3s;
+        }
+
+        nav button.active {
+            color: var(--sun-gold);
+            border-bottom: 2px solid var(--sun-gold);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 100px auto 40px auto;
+            padding: 0 20px;
+        }
+
+        .page { display: none; }
+        .page.active-tab { display: block !important; }
+
+        h2 { font-family: 'Playfair Display', serif; font-style: italic; text-align: center; margin-bottom: 25px; }
+
+        .card {
+            background: var(--glass);
+            border-radius: 24px;
+            padding: 25px; margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Controles de Pontos */
+        .controls { display: flex; align-items: center; justify-content: center; gap: 25px; margin-top: 20px; }
+        .btn-round {
+            width: 50px; height: 50px; border-radius: 50%; 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05); color: white; font-size: 1.5rem; cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-round:hover { background: rgba(255, 255, 255, 0.2); border-color: var(--sun-gold); }
+        
+        .score-display { font-size: 3rem; font-family: 'Playfair Display', serif; color: var(--sun-gold); text-shadow: 0 0 15px rgba(255, 201, 60, 0.4); }
+        .progress-wrap { background: rgba(255, 255, 255, 0.05); height: 6px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #185adb, var(--sun-gold)); transition: 1.2s cubic-bezier(0.4, 0, 0.2, 1); width: 0%; }
+
+        /* Link Loteria Federal */
+        .lottery-link {
+            display: block; text-align: center; margin: 30px auto; padding: 18px;
+            color: var(--sun-gold); text-decoration: none; font-family: 'Playfair Display', serif;
+            font-style: italic; font-weight: 600; border-radius: 40px;
+            background: rgba(24, 90, 219, 0.2); border: 1px solid var(--sun-gold);
+            transition: 0.4s;
+        }
+        .lottery-link:hover { background: var(--sun-gold); color: var(--sky-deep); transform: scale(1.02); }
+
+        /* Estilos de Lista e Tabela */
+        .item-lista { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn-mini { background: none; border: 1px solid rgba(255,255,255,0.2); color: #ccc; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: rgba(255, 255, 255, 0.05); color: var(--sun-gold); padding: 12px; text-align: left; font-size: 0.8rem; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
+
+        input, select, textarea { 
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; 
+        }
+        .btn-action { 
+            background: linear-gradient(45deg, #185adb, #4cc9f0); color: white; border: none; 
+            padding: 16px; border-radius: 30px; width: 100%; font-weight: bold; cursor: pointer; 
+        }
+
+        .level-detail { margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 15px; border-left: 3px solid var(--sun-gold); }
+        .level-detail h3 { color: var(--sun-gold); font-size: 1rem; margin-top: 0; }
+        .editable { cursor: pointer; border-bottom: 1px dashed var(--sun-gold); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <button onclick="showPage('placar')" id="btn-placar" class="active">Placar</button>
+    <button onclick="showPage('niveis')" id="btn-niveis">Níveis</button>
+    <button onclick="showPage('historico')" id="btn-historico">Histórico</button>
+    <button onclick="showPage('regras-casal')" id="btn-regras-casal">Regras</button>
+    <button onclick="showPage('diario')" id="btn-diario">Diário</button>
+</nav>
+
+<div class="container">
+    <div id="placar" class="page active-tab">
+        <h2>Pontuação acumulada</h2>
+        <div class="card">
+            <h2 id="p1-name" onclick="editName(1)" class="editable">Ele</h2>
+            <div class="progress-wrap"><div id="p1-bar" class="progress-fill"></div></div>
+            <div class="controls">
+                <button class="btn-round" onclick="updateScore(1, -1)">-</button>
+                <span class="score-display" id="p1-score">0</span>
+                <button class="btn-round" onclick="updateScore(1, 1)">+</button>
+            </div>
+        </div>
+        <div class="card">
+            <h2 id="p2-name" onclick="editName(2)" class="editable">Ela</h2>
+            <div class="progress-wrap"><div id="p2-bar" class="progress-fill"></div></div>
+            <div class="controls">
+                <button class="btn-round" onclick="updateScore(2, -1)">-</button>
+                <span class="score-display" id="p2-score">0</span>
+                <button class="btn-round" onclick="updateScore(2, 1)">+</button>
+            </div>
+        </div>
+        <a href="https://loterias.caixa.gov.br/Paginas/federal.aspx" target="_blank" class="lottery-link">
+            Consultar Resultados - Loteria Federal ↗
+        </a>
+    </div>
+
+    <div id="niveis" class="page">
+        <h2>Graduação de Experiências</h2>
+        <div class="card">
+            <div class="level-detail">
+                <h3>Nível I: A Base da Intimidade</h3>
+                <ul style="font-size: 0.85rem; color: #ccc; padding-left: 20px;">
+                    <li>Conexão no ambiente doméstico.</li>
+                    <li>Acessórios e brinquedos inéditos.</li>
+                    <li>Massagens e exploração sensorial.</li>
+                </ul>
+            </div>
+            <div class="level-detail">
+                <h3>Nível II: Ousadia e Adrenalina</h3>
+                <ul style="font-size: 0.85rem; color: #ccc; padding-left: 20px;">
+                    <li>3 vitórias no histórico.</li>
+                    <li>Exibicionismo leve e locais inusitados.</li>
+                    <li>Conteúdo privado e roleplays.</li>
+                </ul>
+            </div>
+            <div class="level-detail">
+                <h3>Nível III: Transgressão Liberal</h3>
+                <ul style="font-size: 0.85rem; color: #ccc; padding-left: 20px;">
+                    <li>6 vitórias no histórico.</li>
+                    <li>Fatores externos e clubes de swing.</li>
+                    <li>Inclusão de terceiros ou troca.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="historico" class="page">
+        <h2>Histórico de Sorteios</h2>
+        <div class="card">
+            <input type="date" id="draw-date">
+            <input type="number" id="draw-num" placeholder="Nº Loteria Federal">
+            <select id="draw-winner"><option value="p1">Vencedor: Ele</option><option value="p2">Vencedor: Ela</option></select>
+            <button class="btn-action" onclick="addDraw()">Registrar Sorteio</button>
+            <table>
+                <thead><tr><th>Data</th><th>Nº</th><th>Quem</th><th>Ação</th></tr></thead>
+                <tbody id="draw-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="regras-casal" class="page">
+        <h2>Regras do Casal</h2>
+        <div class="card">
+            <h3 style="color:var(--sun-gold); font-size:1rem;">📜 Regras Gerais</h3>
+            <div id="lista-regras-gerais"></div>
+            <textarea id="input-regra-geral" placeholder="Nova regra..." style="margin-top:10px;"></textarea>
+            <button class="btn-action" onclick="addItem('regrasGerais', 'input-regra-geral')">Adicionar</button>
+        </div>
+        <div class="card">
+            <h3 style="color:#ff4d4d; font-size:1rem;">🚫 Proibições</h3>
+            <div id="lista-regras-proibidas"></div>
+            <textarea id="input-regra-proibida" placeholder="Nova proibição..." style="margin-top:10px;"></textarea>
+            <button class="btn-action" style="background: #4a0404;" onclick="addItem('situacoesProibidas', 'input-regra-proibida')">Adicionar</button>
+        </div>
+    </div>
+
+    <div id="diario" class="page">
+        <h2>Diário dos Desejos</h2>
+        <div class="card">
+            <input type="text" id="hist-title" placeholder="Título da Experiência">
+            <textarea id="hist-desc" placeholder="Relato..." style="height:80px;"></textarea>
+            <input type="file" id="hist-file" accept="image/*">
+            <button class="btn-action" onclick="saveHistory()">Publicar Relato</button>
+        </div>
+        <div id="history-list"></div>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('zeniteDB')) || {
+        p1: { name: "Ele", score: 0 }, p2: { name: "Ela", score: 0 },
+        regrasGerais: [], situacoesProibidas: [], draws: [], history: []
+    };
+
+    function save() { localStorage.setItem('zeniteDB', JSON.stringify(db)); render(); }
+
+    window.showPage = function(pId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-tab'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(pId).classList.add('active-tab');
+        document.getElementById('btn-' + pId).classList.add('active');
+        render();
+    };
+
+    window.updateScore = (p, v) => { db['p'+p].score = Math.max(0, db['p'+p].score + v); save(); };
+    window.editName = (p) => { const n = prompt("Nome:", db['p'+p].name); if(n) { db['p'+p].name = n; save(); } };
+    window.addItem = (arr, id) => { const v = document.getElementById(id).value; if(v) { db[arr].push(v); document.getElementById(id).value=""; save(); } };
+    window.deleteItem = (arr, i) => { if(confirm("Remover?")) { db[arr].splice(i,1); save(); } };
+    window.addDraw = () => {
+        const d = document.getElementById('draw-date').value, n = document.getElementById('draw-num').value, w = document.getElementById('draw-winner').value;
+        if(d && n) { db.draws.unshift({date: d, num: n, winner: db[w].name}); save(); }
+    };
+
+    window.saveHistory = function() {
+        const t = document.getElementById('hist-title').value, d = document.getElementById('hist-desc').value, f = document.getElementById('hist-file').files[0];
+        if(!t) return;
+        const proc = (img = null) => {
+            db.history.unshift({ date: new Date().toLocaleDateString(), title: t, desc: d, img: img });
+            document.getElementById('hist-title').value = ""; document.getElementById('hist-desc').value = ""; save();
+        };
+        if(f) { const r = new FileReader(); r.onload = (e) => proc(e.target.result); r.readAsDataURL(f); } else { proc(); }
+    };
+
+    function render() {
+        document.getElementById('p1-name').innerText = db.p1.name;
+        document.getElementById('p2-name').innerText = db.p2.name;
+        document.getElementById('p1-score').innerText = db.p1.score;
+        document.getElementById('p2-score').innerText = db.p2.score;
+        document.getElementById('p1-bar').style.width = Math.min((db.p1.score / 10)*100, 100) + "%";
+        document.getElementById('p2-bar').style.width = Math.min((db.p2.score / 10)*100, 100) + "%";
+
+        const mkL = (arr) => db[arr].map((item, i) => `<div class="item-lista"><span>${item}</span><button class="btn-mini" onclick="deleteItem('${arr}', ${i})">X</button></div>`).join('');
+        document.getElementById('lista-regras-gerais').innerHTML = mkL('regrasGerais');
+        document.getElementById('lista-regras-proibidas').innerHTML = mkL('situacoesProibidas');
+
+        document.getElementById('draw-list').innerHTML = db.draws.map(h => `<tr><td>${h.date.split('-').reverse().join('/')}</td><td>${h.num}</td><td>${h.winner}</td><td>-</td></tr>`).join('');
+        document.getElementById('history-list').innerHTML = db.history.map(h => `<div class="card"><h3>${h.title}</h3><p style="font-size:0.85rem;">${h.desc}</p>${h.img ? `<img src="${h.img}" style="width:100%; border-radius:15px; margin-top:10px;">` : ''}</div>`).join('');
+    }
+    window.onload = render;
+</script>
+</body>
+</html>
